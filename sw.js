@@ -1,5 +1,5 @@
 // Day Deck service worker: network first (so updates show up), cache as the offline fallback.
-const CACHE = 'daydeck-v2';
+const CACHE = 'daydeck-v3';
 const ASSETS = ['./', './index.html', './styles.css', './manifest.webmanifest', './js/i18n.js', './js/core.js', './js/ui.js', './js/cards.js', './js/pages.js', './js/app.js'];
 
 self.addEventListener('install', (e) => {
@@ -14,7 +14,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      const res = await fetch(req);
+      const res = await fetch(req, { cache: 'no-cache' }); // revalidate: skip the 10-min HTTP cache
       if (res && res.ok) cache.put(req, res.clone());
       return res;
     } catch (err) {
