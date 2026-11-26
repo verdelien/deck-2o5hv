@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Day Deck">
+  <meta name="theme-color" id="theme-color" content="#FBF6F3">
+  <title>Day Deck</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <!-- Set the theme before CSS paints, so there is no flash. Mirrors DD.resolveTheme in js/core.js. -->
+  <script>
+    (function () {
+      var t = 'system';
+      try {
+        var s = JSON.parse(localStorage.getItem('daydeck.v1') || 'null');
+        if (s && s.settings && s.settings.theme) t = s.settings.theme;
+      } catch (e) {}
+      if (t !== 'day' && t !== 'night') {
+        t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('theme-color').setAttribute('content', t === 'night' ? '#1C1514' : '#FBF6F3');
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div class="pager" id="pager">
+      <section class="page" id="page-record" aria-label="记录"></section>
+      <section class="page" id="page-insights" aria-label="洞察"></section>
+    </div>
+    <nav class="deck" id="deck" aria-label="卡牌"></nav>
+  </div>
+  <div id="layer"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/core.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

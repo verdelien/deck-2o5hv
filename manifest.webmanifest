@@ -1,0 +1,11 @@
+{
+  "name": "Day Deck",
+  "short_name": "Day Deck",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FBF6F3",
+  "theme_color": "#FBF6F3",
+  "icons": []
+}
