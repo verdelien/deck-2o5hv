@@ -76,7 +76,8 @@
   --d-work: #7A4E6E;
   --d-more: #B07A4F;
   --col: 560px;
-  --deck-h: 150px;
+  --deck-h: 172px;
+  --tuck: 112px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Segoe UI", Roboto, sans-serif;
@@ -119,7 +120,7 @@ button { cursor: pointer; }
 .dot { width: 9px; height: 9px; border-radius: 9px; background: var(--tear); border: 0; padding: 0; transition: width .2s, background-color .2s; position: relative; }
 .dot::after { content: ""; position: absolute; inset: -14px -6px; } /* bigger touch area */
 .dot.on { width: 26px; background: var(--accent); }
-.head-btns { display: flex; gap: 10px; padding-top: 4px; }
+.head-btns { display: flex; gap: 8px; padding-top: 4px; }
 .round-btn {
   width: 44px; height: 44px; border-radius: 50%; border: 0;
   background: var(--btn); color: var(--text);
@@ -127,6 +128,7 @@ button { cursor: pointer; }
   flex: 0 0 auto; position: relative;
 }
 .round-btn svg { width: 22px; height: 22px; }
+.lang-btn { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
 .round-btn:active { transform: scale(.94); }
 
 /* ---------- Ticket panel ---------- */
@@ -191,9 +193,11 @@ button { cursor: pointer; }
   scrollbar-width: none; touch-action: pan-x;
 }
 .deck-scroll::-webkit-scrollbar { display: none; }
-.deck-inner { position: relative; height: 100%; margin: 0 auto; }
+.deck-inner { position: relative; height: 100%; margin: 0 auto; transition: transform .32s cubic-bezier(.2,.8,.3,1); }
+.deck.tucked .deck-inner { transform: translateY(var(--tuck)); }
+#page-insights { padding-bottom: calc(var(--deck-h) - var(--tuck) + var(--safe-b) + 40px); }
 .card {
-  position: absolute; bottom: calc(-46px + var(--safe-b) * .4); width: 128px; height: 186px;
+  position: absolute; bottom: calc(-44px + var(--safe-b) * .4); width: 132px; height: 216px;
   border-radius: 28px; border: 0; padding: 14px 14px 0; text-align: left;
   display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
   color: #fff; box-shadow: var(--card-shadow); overflow: hidden;
@@ -204,7 +208,12 @@ button { cursor: pointer; }
 .card:active, .card.lift { box-shadow: 0 -6px 22px rgba(60, 20, 15, .3); }
 .card .c-head { font-size: 12.5px; opacity: .82; white-space: nowrap; font-variant-numeric: tabular-nums; height: 20px; }
 .card .c-head.timer { font-size: 15px; font-weight: 700; opacity: 1; background: rgba(0,0,0,.14); display: inline-block; padding: 1px 8px; border-radius: 999px; height: auto; }
-.card .c-name { font-size: 27px; font-weight: 800; margin-top: 6px; letter-spacing: .02em; white-space: nowrap; }
+.card .c-name { font-size: 26px; font-weight: 800; margin-top: 4px; letter-spacing: .02em; white-space: nowrap; line-height: 1.2; }
+.card .c-label { font-size: 12.5px; opacity: .85; margin-top: 6px; white-space: nowrap; }
+.card .c-big { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; line-height: 1; margin-top: 2px; }
+.card .c-num { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.card .c-unit { font-size: 14px; font-weight: 600; opacity: .9; }
+.card .hint-line { margin-top: 8px; white-space: normal; width: 104px; }
 .card .c-line { font-size: 13px; line-height: 1.35; margin-top: 4px; opacity: .92; white-space: nowrap; }
 .card.meal { background: var(--c-meal); }
 .card.gym { background: var(--c-gym); color: #2A1C1A; }
@@ -347,8 +356,10 @@ select.inp { -webkit-appearance: none; appearance: none; padding-right: 30px; ba
 
 /* Wider screens: a slightly larger column and deck. */
 @media (min-width: 700px) {
-  :root { --col: 620px; --deck-h: 170px; }
-  .card { width: 150px; height: 206px; }
+  :root { --col: 620px; --deck-h: 196px; --tuck: 128px; }
+  .card { width: 154px; height: 240px; }
   .card .c-name { font-size: 30px; }
+  .card .c-num { font-size: 40px; }
+  .card .hint-line { width: 124px; }
   .card .c-line { font-size: 14px; }
 }

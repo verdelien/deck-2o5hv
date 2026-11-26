@@ -57,10 +57,10 @@
     const isNew = !cur;
     if (cur) { cur.backdrop.remove(); cur.panel.remove(); }
     const backdrop = h('div', { class: 'backdrop', onClick: () => DD.closeSheet() });
-    const saveBtn = opts.onSave ? h('button', { class: 'save-btn', type: 'button', onClick: () => opts.onSave() }, opts.saveLabel || '保存') : h('button', { class: 'txt-btn', type: 'button', onClick: () => DD.closeSheet() }, opts.doneLabel || '完成');
+    const saveBtn = opts.onSave ? h('button', { class: 'save-btn', type: 'button', onClick: () => opts.onSave() }, opts.saveLabel || DD.t('保存')) : h('button', { class: 'txt-btn', type: 'button', onClick: () => DD.closeSheet() }, opts.doneLabel || DD.t('完成'));
     const head = h('div', { class: 'sheet-head' },
       h('div', { class: 'grabber' }),
-      h('div', { class: 'left' }, opts.onSave ? h('button', { class: 'txt-btn', type: 'button', onClick: () => DD.closeSheet() }, '取消') : null),
+      h('div', { class: 'left' }, opts.onSave ? h('button', { class: 'txt-btn', type: 'button', onClick: () => DD.closeSheet() }, DD.t('取消')) : null),
       h('div', { class: 'sheet-title' }, opts.title || ''),
       h('div', { class: 'right' }, saveBtn));
     const body = h('div', { class: 'sheet-body' });

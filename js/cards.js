@@ -4,6 +4,7 @@
   const DD = window.DD;
   const h = DD.h;
   const S = () => DD.state;
+  const t = DD.t;
 
   const toInt = (v) => { const n = parseInt(v, 10); return n > 0 ? n : null; };
   const toNum = (v) => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
@@ -25,7 +26,7 @@
   function whenFields(draft, rerender, withDuration, label) {
     const timeEl = h('input', { class: 'inp', type: 'datetime-local', value: DD.dtValue(draft.start) });
     timeEl.addEventListener('change', () => { const v = DD.fromDtValue(timeEl.value); if (v) { draft.start = v; draft.startTouched = true; } });
-    const out = [DD.field(label || (withDuration ? '开始时间' : '时间'), timeEl)];
+    const out = [DD.field(label || t(withDuration ? '开始时间' : '时间'), timeEl)];
     if (!withDuration) return out;
     const setMinutes = (m) => {
       draft.minutes = m;
@@ -35,11 +36,11 @@
         timeEl.value = DD.dtValue(draft.start);
       }
     };
-    const minEl = h('input', { class: 'inp num', type: 'number', inputmode: 'numeric', min: '0', placeholder: '分钟', value: draft.minutes || '' });
+    const minEl = h('input', { class: 'inp num', type: 'number', inputmode: 'numeric', min: '0', placeholder: t('分钟'), value: draft.minutes || '' });
     minEl.addEventListener('input', () => setMinutes(toInt(minEl.value)));
-    const chipRow = DD.chips([15, 30, 60, 90].map((m) => [m, m < 60 ? `${m} 分钟` : `${m / 60} 小时`]), toInt(draft.minutes), (m) => { setMinutes(m); rerender(); }, { small: true, allowNone: true });
+    const chipRow = DD.chips([15, 30, 60, 90].map((m) => [m, t(m < 60 ? `${m} 分钟` : `${m / 60} 小时`)]), toInt(draft.minutes), (m) => { setMinutes(m); rerender(); }, { small: true, allowNone: true });
     chipRow.append(minEl);
-    out.push(DD.field('多久', chipRow));
+    out.push(DD.field(t('多久'), chipRow));
     return out;
   }
 
@@ -48,25 +49,25 @@
     if (ctx.editing || !DD.TIMER_CARDS.includes(ctx.card)) return null;
     if (draft.running) {
       return h('div', { class: 'timer-box' },
-        h('div', null, h('div', { class: 'small muted' }, `${DD.fmtHM(draft.start)} 开始 · 计时中`), h('div', { class: 'big', 'data-since': draft.start }, DD.fmtElapsed(Date.now() - DD.parseLocal(draft.start)))),
+        h('div', null, h('div', { class: 'small muted' }, t('{time} 开始 · 计时中', { time: DD.fmtHM(draft.start) })), h('div', { class: 'big', 'data-since': draft.start }, DD.fmtElapsed(Date.now() - DD.parseLocal(draft.start)))),
         h('div', { class: 'inp-row' },
           h('button', { type: 'button', class: 'pill-btn soft', onClick: () => {
-            if (!DD.ask('放弃这次计时？不会保存记录。')) return;
+            if (!DD.ask(t('放弃这次计时？不会保存记录。'))) return;
             S().timer = null; DD.save(); DD.closeSheet(); DD.render();
-          } }, '放弃'),
+          } }, t('放弃')),
           h('button', { type: 'button', class: 'pill-btn', onClick: () => {
             draft.minutes = elapsedMin(draft.start); draft.running = false; draft.stopped = true; ctx.rerender();
-          } }, '停止')));
+          } }, t('停止'))));
     }
     if (draft.stopped) {
-      return h('div', { class: 'timer-box' }, h('div', null, h('div', { class: 'small muted' }, '计时结束'), h('div', { class: 'big' }, DD.fmtDur(draft.minutes))), h('div', { class: 'small muted' }, '确认后点保存'));
+      return h('div', { class: 'timer-box' }, h('div', null, h('div', { class: 'small muted' }, t('计时结束')), h('div', { class: 'big' }, DD.fmtDur(draft.minutes))), h('div', { class: 'small muted' }, t('确认后点保存')));
     }
     return h('div', { class: 'timer-box' },
-      h('div', { class: 'small muted', style: 'flex:1 1 160px' }, '现在开始做？先开始计时，做完再回来补充。'),
-      h('button', { type: 'button', class: 'pill-btn', onClick: () => ctx.startTimer() }, '开始计时'));
+      h('div', { class: 'small muted', style: 'flex:1 1 160px' }, t('现在开始做？先开始计时，做完再回来补充。')),
+      h('button', { type: 'button', class: 'pill-btn', onClick: () => ctx.startTimer() }, t('开始计时')));
   }
 
-  const noteField = (draft, label, placeholder) => DD.field(label || '备注', DD.textInput(draft, 'note', { multiline: true, placeholder: placeholder || '可选' }));
+  const noteField = (draft, label, placeholder) => DD.field(label || t('备注'), DD.textInput(draft, 'note', { multiline: true, placeholder: placeholder || t('可选') }));
 
   /* ---------- Card definitions ---------- */
 
@@ -89,27 +90,27 @@
           ctx.rerender();
           setTimeout(() => { const el = ctx.body.querySelector('[data-food-input]'); if (el) el.focus(); }, 0);
         };
-        const input = DD.textInput(d, 'foodName', { placeholder: '例如：鸡蛋', enterkeyhint: 'done', 'data-food-input': '1' });
+        const input = DD.textInput(d, 'foodName', { placeholder: t('例如：鸡蛋'), enterkeyhint: 'done', 'data-food-input': '1' });
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addFood(d.foodName); } });
         const recent = Object.keys(st.foods).filter((n) => !d.items.some((i) => i.food === n))
           .sort((a, b) => ((st.foods[b].lastUsed || '') > (st.foods[a].lastUsed || '') ? 1 : -1)).slice(0, 14);
         return [
-          DD.seg(DD.MEAL_TYPES, d.type, (v) => { d.type = v; ctx.rerender(); }),
-          DD.field('吃了什么',
-            h('div', { class: 'inp-row' }, input, h('button', { type: 'button', class: 'add-btn', onClick: () => addFood(d.foodName) }, '添加')),
+          DD.seg(DD.MEAL_TYPES.map(([v, l]) => [v, t(l)]), d.type, (v) => { d.type = v; ctx.rerender(); }),
+          DD.field(t('吃了什么'),
+            h('div', { class: 'inp-row' }, input, h('button', { type: 'button', class: 'add-btn', onClick: () => addFood(d.foodName) }, t('添加'))),
             recent.length ? h('div', { style: 'margin-top:10px' }, DD.chips(recent.map((n) => [n, '+ ' + n]), null, addFood, { small: true })) : null),
           d.items.map((it, idx) => h('div', { class: 'item' },
             h('div', { class: 'item-head' }, h('span', { class: 'item-name' }, it.food),
-              h('button', { type: 'button', class: 'icon-x', 'aria-label': '移除', onClick: () => { d.items.splice(idx, 1); ctx.rerender(); } }, '×')),
-            h('div', { class: 'small muted', style: 'margin-top:4px' }, it.group ? '' : '选一个分类（以后会记住）'),
-            DD.chips(DD.FOOD_GROUPS, it.group, (g) => { it.group = g; ctx.rerender(); }, { small: true }),
-            DD.chips(DD.PORTIONS.map((p) => [p, p + '份']), it.portion, (p) => { it.portion = p; ctx.rerender(); }, { small: true, allowNone: true }))),
+              h('button', { type: 'button', class: 'icon-x', 'aria-label': t('移除'), onClick: () => { d.items.splice(idx, 1); ctx.rerender(); } }, '×')),
+            h('div', { class: 'small muted', style: 'margin-top:4px' }, it.group ? '' : t('选一个分类（以后会记住）')),
+            DD.chips(DD.FOOD_GROUPS.map((g) => [g, t(g)]), it.group, (g) => { it.group = g; ctx.rerender(); }, { small: true }),
+            DD.chips(DD.PORTIONS.map((p) => [p, t(p + '份')]), it.portion, (p) => { it.portion = p; ctx.rerender(); }, { small: true, allowNone: true }))),
           whenFields(d, ctx.rerender, false),
           noteField(d),
         ];
       },
       collect(d) {
-        if (!d.items.length && !(d.note || '').trim()) return { error: '加一样吃的' };
+        if (!d.items.length && !(d.note || '').trim()) return { error: t('加一样吃的') };
         const items = d.items.map((i) => ({ food: i.food, group: i.group || '其他', portion: i.portion || null }));
         return { type: d.type, data: { items } };
       },
@@ -143,7 +144,7 @@
           d.exName = '';
           ctx.rerender();
         };
-        const input = DD.textInput(d, 'exName', { placeholder: '例如：深蹲', enterkeyhint: 'done' });
+        const input = DD.textInput(d, 'exName', { placeholder: t('例如：深蹲'), enterkeyhint: 'done' });
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addEx(d.exName); } });
         const recent = Object.keys(st.exercises).filter((id) => !d.exercises.some((e) => e.name === st.exercises[id].name))
           .sort((a, b) => ((st.exercises[b].lastUsed || '') > (st.exercises[a].lastUsed || '') ? 1 : -1)).slice(0, 12);
@@ -153,29 +154,29 @@
             d.exercises = last.data.exercises.map((e) => ({ name: DD.exName(e.exerciseId), sets: e.sets.map((s) => ({ kg: s.kg ?? '', reps: s.reps ?? '' })) }));
             d.focus = last.data.focus || d.focus;
             ctx.rerender();
-          } }, `照上次练（${DD.fmtWhen(last.start)}${last.data.focus ? ' · ' + last.data.focus : ''}）`) : null,
+          } }, t('照上次练（{when}）', { when: DD.fmtWhen(last.start) + (last.data.focus ? ' · ' + t(last.data.focus) : '') })) : null,
           timerBox(d, ctx),
-          DD.field('练哪里', DD.chips(DD.GYM_FOCUS, d.focus, (v) => { d.focus = v; ctx.rerender(); }, { allowNone: true })),
-          DD.field('动作',
-            h('div', { class: 'inp-row' }, input, h('button', { type: 'button', class: 'add-btn', onClick: () => addEx(d.exName) }, '添加')),
+          DD.field(t('练哪里'), DD.chips(DD.GYM_FOCUS.map((f) => [f, t(f)]), d.focus, (v) => { d.focus = v; ctx.rerender(); }, { allowNone: true })),
+          DD.field(t('动作'),
+            h('div', { class: 'inp-row' }, input, h('button', { type: 'button', class: 'add-btn', onClick: () => addEx(d.exName) }, t('添加'))),
             recent.length ? h('div', { style: 'margin-top:10px' }, DD.chips(recent.map((id) => [st.exercises[id].name, '+ ' + st.exercises[id].name]), null, addEx, { small: true })) : null),
           d.exercises.map((ex, ei) => h('div', { class: 'item' },
             h('div', { class: 'item-head' }, h('span', { class: 'item-name' }, ex.name),
-              h('button', { type: 'button', class: 'icon-x', 'aria-label': '移除动作', onClick: () => { d.exercises.splice(ei, 1); ctx.rerender(); } }, '×')),
+              h('button', { type: 'button', class: 'icon-x', 'aria-label': t('移除动作'), onClick: () => { d.exercises.splice(ei, 1); ctx.rerender(); } }, '×')),
             ex.sets.map((s, si) => h('div', { class: 'set-row' },
-              h('span', { class: 'n' }, `第${si + 1}组`),
+              h('span', { class: 'n' }, t('第{n}组', { n: si + 1 })),
               DD.textInput(s, 'kg', { type: 'text', inputmode: 'decimal', placeholder: 'kg', 'aria-label': 'kg' }),
               h('span', { class: 'times' }, '×'),
-              DD.textInput(s, 'reps', { type: 'text', inputmode: 'numeric', placeholder: '次', 'aria-label': '次数' }),
-              h('button', { type: 'button', class: 'icon-x', 'aria-label': '删除这组', onClick: () => { ex.sets.splice(si, 1); ctx.rerender(); } }, '×'))),
-            h('button', { type: 'button', class: 'sub-btn', onClick: () => { const l = ex.sets[ex.sets.length - 1]; ex.sets.push(l ? { kg: l.kg, reps: l.reps } : { kg: '', reps: '' }); ctx.rerender(); } }, '+ 一组'))),
+              DD.textInput(s, 'reps', { type: 'text', inputmode: 'numeric', placeholder: t('次数'), 'aria-label': t('次数') }),
+              h('button', { type: 'button', class: 'icon-x', 'aria-label': t('删除这组'), onClick: () => { ex.sets.splice(si, 1); ctx.rerender(); } }, '×'))),
+            h('button', { type: 'button', class: 'sub-btn', onClick: () => { const l = ex.sets[ex.sets.length - 1]; ex.sets.push(l ? { kg: l.kg, reps: l.reps } : { kg: '', reps: '' }); ctx.rerender(); } }, t('+ 一组')))),
           whenFields(d, ctx.rerender, true),
           noteField(d),
         ];
       },
       collect(d) {
         const exs = d.exercises.filter((e) => e.name.trim());
-        if (!exs.length && !toInt(d.minutes)) return { error: '加一个动作，或者填一下多久' };
+        if (!exs.length && !toInt(d.minutes)) return { error: t('加一个动作，或者填一下多久') };
         const st = S(), now = DD.nowLocal();
         const exercises = exs.map((e) => {
           let id = Object.keys(st.exercises).find((k) => st.exercises[k].name.toLowerCase() === e.name.trim().toLowerCase());
@@ -198,8 +199,8 @@
       },
       render(d, ctx) {
         const st = S();
-        const types = DD.DO_TYPES.filter((t) => st.settings.doTypes.includes(t.id) || t.id === d.type);
-        const out = [DD.field('做了什么', DD.chips(types.map((t) => [t.id, t.label]), d.type, (v) => { d.type = v; ctx.rerender(); }))];
+        const types = DD.DO_TYPES.filter((x) => st.settings.doTypes.includes(x.id) || x.id === d.type);
+        const out = [DD.field(t('做了什么'), DD.chips(types.map((x) => [x.id, t(x.label)]), d.type, (v) => { d.type = v; ctx.rerender(); }))];
         if (d.type === 'writing') {
           const addProject = () => {
             const name = d.newProject.trim();
@@ -208,17 +209,17 @@
             if (!id) { id = DD.uid('pj'); st.projects[id] = { name }; DD.save(); }
             d.projectId = id; d.newProject = ''; ctx.rerender();
           };
-          const inp = DD.textInput(d, 'newProject', { placeholder: '新项目名', enterkeyhint: 'done' });
+          const inp = DD.textInput(d, 'newProject', { placeholder: t('新项目名'), enterkeyhint: 'done' });
           inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addProject(); } });
-          out.push(DD.field('哪个项目',
+          out.push(DD.field(t('哪个项目'),
             Object.keys(st.projects).length ? DD.chips(Object.keys(st.projects).map((id) => [id, st.projects[id].name]), d.projectId, (v) => { d.projectId = v; ctx.rerender(); }, { allowNone: true }) : null,
-            h('div', { class: 'inp-row', style: 'margin-top:10px' }, inp, h('button', { type: 'button', class: 'add-btn', onClick: addProject }, '添加'))));
+            h('div', { class: 'inp-row', style: 'margin-top:10px' }, inp, h('button', { type: 'button', class: 'add-btn', onClick: addProject }, t('添加')))));
         }
-        if (d.type === 'social') out.push(DD.field('和谁', DD.seg([['friends', '朋友'], ['career', '工作与职业']], d.with, (v) => { d.with = v; ctx.rerender(); }, 'sm', true)));
+        if (d.type === 'social') out.push(DD.field(t('和谁'), DD.seg([['friends', t('朋友')], ['career', t('工作与职业')]], d.with, (v) => { d.with = v; ctx.rerender(); }, 'sm', true)));
         out.push(timerBox(d, ctx));
         out.push(whenFields(d, ctx.rerender, true));
-        if (d.type === 'self') out.push(DD.field('值得吗？', DD.seg([[true, '值得'], [false, '不太值']], d.worth, (v) => { d.worth = v; ctx.rerender(); }, 'sm', true)));
-        out.push(noteField(d, DD.doType(d.type).prompt, '一句话就好'));
+        if (d.type === 'self') out.push(DD.field(t('值得吗？'), DD.seg([[true, t('值得')], [false, t('不太值')]], d.worth, (v) => { d.worth = v; ctx.rerender(); }, 'sm', true)));
+        out.push(noteField(d, t(DD.doType(d.type).prompt), t('一句话就好')));
         return out;
       },
       collect(d) {
@@ -242,23 +243,23 @@
           if (!d.chores.includes(name)) d.chores.push(name);
           d.newChip = ''; ctx.rerender();
         };
-        const inp = DD.textInput(d, 'newChip', { placeholder: '自己加一项', enterkeyhint: 'done' });
+        const inp = DD.textInput(d, 'newChip', { placeholder: t('自己加一项'), enterkeyhint: 'done' });
         inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addChip(); } });
         return [
-          DD.field('做了哪些（可多选）', DD.chips(all, d.chores, (v) => { d.chores = v; ctx.rerender(); }, { multi: true }),
-            h('div', { class: 'inp-row', style: 'margin-top:10px' }, inp, h('button', { type: 'button', class: 'add-btn', onClick: addChip }, '添加'))),
+          DD.field(t('做了哪些（可多选）'), DD.chips(all.map((c) => [c, t(c)]), d.chores, (v) => { d.chores = v; ctx.rerender(); }, { multi: true }),
+            h('div', { class: 'inp-row', style: 'margin-top:10px' }, inp, h('button', { type: 'button', class: 'add-btn', onClick: addChip }, t('添加')))),
           timerBox(d, ctx),
           whenFields(d, ctx.rerender, true),
           noteField(d),
         ];
       },
       collect(d) {
-        if (!d.chores.length) return { error: '选一项家务' };
+        if (!d.chores.length) return { error: t('选一项家务') };
         return { type: 'chores', data: { chores: d.chores.slice() } };
       },
       afterSave(d, rec, ctx) {
         if (!ctx.editing && rec.data.chores.includes('做饭')) {
-          setTimeout(() => DD.toast('做了饭，顺便记一下吃了什么？', { label: '记一餐', run: () => DD.openCardSheet('meal') }), 300);
+          setTimeout(() => DD.toast(t('做了饭，顺便记一下吃了什么？'), { label: t('记一餐'), run: () => DD.openCardSheet('meal') }), 300);
         }
       },
     },
@@ -277,11 +278,11 @@
       },
       render(d, ctx) {
         const out = [];
-        if (!ctx.editing && !d.running) out.push(DD.seg([['log', '学习 / 做了什么'], ['review', '复盘']], d.tab, (v) => { d.tab = v; ctx.setTitle(v === 'review' ? '复盘' : DD.cardName('work')); ctx.rerender(); }));
+        if (!ctx.editing && !d.running) out.push(DD.seg([['log', t('学习 / 做了什么')], ['review', t('复盘')]], d.tab, (v) => { d.tab = v; ctx.setTitle(v === 'review' ? t('复盘') : DD.cardName('work')); ctx.rerender(); }));
         if (d.tab === 'log') {
           d.type = d.kind;
-          out.push(DD.field('类型', DD.chips([['learned', '学到'], ['did', '做了']], d.kind, (v) => { d.kind = v; d.type = v; ctx.rerender(); })));
-          out.push(DD.field(d.kind === 'did' ? '做了什么？' : '学到了什么？', DD.textInput(d, 'text', { multiline: true, placeholder: '一句话就好' })));
+          out.push(DD.field(t('类型'), DD.chips([['learned', t('学到')], ['did', t('做了')]], d.kind, (v) => { d.kind = v; d.type = v; ctx.rerender(); })));
+          out.push(DD.field(t(d.kind === 'did' ? '做了什么？' : '学到了什么？'), DD.textInput(d, 'text', { multiline: true, placeholder: t('一句话就好') })));
           out.push(timerBox(d, ctx));
           out.push(whenFields(d, ctx.rerender, true));
           return out;
@@ -289,21 +290,21 @@
         // 复盘 tab: the day's notes as reminders, then three short fields.
         const dayRecs = DD.recordsBetween(d.reviewDay, d.reviewDay).filter((r) => (r.card === 'do' && r.note) || (r.card === 'work' && r.type !== 'review' && r.data && r.data.text)).sort(DD.byStartDesc);
         if (dayRecs.length) {
-          out.push(h('div', { class: 'reminders' }, h('div', { class: 'muted small' }, `${d.reviewDay === DD.todayKey() ? '今天' : DD.fmtDayLong(d.reviewDay)}记下的`),
-            h('ul', null, dayRecs.slice(0, 8).map((r) => h('li', null, `${r.card === 'do' ? DD.doType(r.type).label : (r.type === 'did' ? '做了' : '学到')}：${r.card === 'do' ? r.note : r.data.text}`)))));
+          out.push(h('div', { class: 'reminders' }, h('div', { class: 'muted small' }, t('{day}记下的', { day: d.reviewDay === DD.todayKey() ? t('今天') : DD.fmtDayLong(d.reviewDay) })),
+            h('ul', null, dayRecs.slice(0, 8).map((r) => h('li', null, `${t(r.card === 'do' ? DD.doType(r.type).label : (r.type === 'did' ? '做了' : '学到'))}: ${r.card === 'do' ? r.note : r.data.text}`)))));
         }
-        out.push(h('div', { class: 'hint' }, '工作和工作以外的都可以写，每项都可以空着。'));
-        out.push(DD.field('今天做了什么', DD.textInput(d, 'done', { multiline: true })));
-        out.push(DD.field('学到了什么', DD.textInput(d, 'learned', { multiline: true, placeholder: '一行一条' })));
-        out.push(DD.field('明天要做什么', DD.textInput(d, 'next', { multiline: true })));
+        out.push(h('div', { class: 'hint' }, t('工作和工作以外的都可以写，每项都可以空着。')));
+        out.push(DD.field(t('今天做了什么'), DD.textInput(d, 'done', { multiline: true })));
+        out.push(DD.field(t('学到了什么'), DD.textInput(d, 'learned', { multiline: true, placeholder: t('一行一条') })));
+        out.push(DD.field(t('明天要做什么'), DD.textInput(d, 'next', { multiline: true })));
         return out;
       },
       collect(d) {
         if (d.tab === 'log') {
-          if (!d.text.trim()) return { error: d.kind === 'did' ? '写一句做了什么' : '写一句学到了什么' };
+          if (!d.text.trim()) return { error: t(d.kind === 'did' ? '写一句做了什么' : '写一句学到了什么') };
           return { type: d.kind, data: { text: d.text.trim() } };
         }
-        if (![d.done, d.learned, d.next].some((x) => (x || '').trim())) return { error: '至少写一项' };
+        if (![d.done, d.learned, d.next].some((x) => (x || '').trim())) return { error: t('至少写一项') };
         const existing = d.review && S().records.find((r) => r.id === d.review);
         const start = existing ? existing.start : (d.reviewDay === DD.todayKey() ? DD.nowLocal() : d.reviewDay + 'T21:00:00');
         return { id: d.review || undefined, type: 'review', start, minutes: null, data: { done: d.done.trim(), learned: d.learned.trim(), next: d.next.trim() } };
@@ -319,20 +320,20 @@
       },
       render(d, ctx) {
         const st = S();
-        const types = DD.MORE_TYPES.filter((t) => st.settings.moreTypes.includes(t[0]) || t[0] === d.type);
+        const types = DD.MORE_TYPES.filter((x) => st.settings.moreTypes.includes(x[0]) || x[0] === d.type).map(([v, l]) => [v, t(l)]);
         const out = [];
         if (!ctx.editing) out.push(DD.seg(types, d.type, (v) => { d.type = v; ctx.rerender(); }));
         if (d.type === 'spend') {
-          out.push(DD.field('多少钱', DD.textInput(d, 'amount', { inputmode: 'decimal', placeholder: '0.00' })));
-          out.push(DD.field('花在哪', DD.textInput(d, 'note', { placeholder: '一句话（只是随手记，不做预算）' })));
+          out.push(DD.field(t('多少钱'), DD.textInput(d, 'amount', { inputmode: 'decimal', placeholder: '0.00' })));
+          out.push(DD.field(t('花在哪'), DD.textInput(d, 'note', { placeholder: t('一句话（只是随手记，不做预算）') })));
         } else if (d.type === 'watched') {
-          out.push(DD.field('什么', DD.chips(DD.WATCH_KINDS, d.kind, (v) => { d.kind = v; ctx.rerender(); }, { small: true })));
-          out.push(DD.field('名字', DD.textInput(d, 'title', { placeholder: '书名、剧名、展名…' })));
-          out.push(DD.field(d.kind === '书' ? '读完了吗？' : '看完了吗？', DD.seg([[true, d.kind === '书' ? '读完了' : '看完了'], [false, d.kind === '书' ? '在读' : '在看']], d.finished, (v) => { d.finished = v; ctx.rerender(); }, 'sm', true)));
-          out.push(DD.field('值得吗？', DD.seg([[true, '值得'], [false, '不太值']], d.worth, (v) => { d.worth = v; ctx.rerender(); }, 'sm', true)));
-          out.push(noteField(d, '想法'));
+          out.push(DD.field(t('什么'), DD.chips(DD.WATCH_KINDS.map((k) => [k, t(k)]), d.kind, (v) => { d.kind = v; ctx.rerender(); }, { small: true })));
+          out.push(DD.field(t('名字'), DD.textInput(d, 'title', { placeholder: t('书名、剧名、展名…') })));
+          out.push(DD.field(t(d.kind === '书' ? '读完了吗？' : '看完了吗？'), DD.seg([[true, t(d.kind === '书' ? '读完了' : '看完了')], [false, t(d.kind === '书' ? '在读' : '在看')]], d.finished, (v) => { d.finished = v; ctx.rerender(); }, 'sm', true)));
+          out.push(DD.field(t('值得吗？'), DD.seg([[true, t('值得')], [false, t('不太值')]], d.worth, (v) => { d.worth = v; ctx.rerender(); }, 'sm', true)));
+          out.push(noteField(d, t('想法')));
         } else {
-          out.push(DD.field('写点什么', DD.textInput(d, 'note', { multiline: true, placeholder: '随便写', style: 'min-height:140px' })));
+          out.push(DD.field(t('写点什么'), DD.textInput(d, 'note', { multiline: true, placeholder: t('随便写'), style: 'min-height:140px' })));
         }
         out.push(whenFields(d, ctx.rerender, false));
         return out;
@@ -340,14 +341,14 @@
       collect(d) {
         if (d.type === 'spend') {
           const a = toNum(d.amount);
-          if (a == null || a <= 0) return { error: '填一下金额' };
+          if (a == null || a <= 0) return { error: t('填一下金额') };
           return { type: 'spend', data: { amount: Math.round(a * 100) / 100 } };
         }
         if (d.type === 'watched') {
-          if (!d.title.trim()) return { error: '填一下名字' };
+          if (!d.title.trim()) return { error: t('填一下名字') };
           return { type: 'watched', data: { title: d.title.trim(), kind: d.kind, finished: d.finished, worth: d.worth } };
         }
-        if (!(d.note || '').trim()) return { error: '写一点内容' };
+        if (!(d.note || '').trim()) return { error: t('写一点内容') };
         return { type: 'note', data: {} };
       },
     },
@@ -391,7 +392,7 @@
       get body() { return sheet.body; },
       startTimer() {
         if (st.timer) {
-          if (!DD.ask(`「${DD.timerLabel(st.timer)}」正在计时。先把它结束并保存，再开始新的？`)) return;
+          if (!DD.ask(t('「{name}」正在计时。先把它结束并保存，再开始新的？', { name: DD.timerLabel(st.timer) }))) return;
           DD.finishTimer();
         }
         const snap = clone(draft);
@@ -400,16 +401,16 @@
         DD.save();
         DD.closeSheet();
         DD.render();
-        DD.toast('开始计时了，做完点卡片结束');
+        DD.toast(t('开始计时了，做完点卡片结束'));
       },
     };
 
     const render = () => {
       const nodes = [].concat(def.render(draft, ctx)).flat(Infinity).filter(Boolean);
       if (editing) nodes.push(h('button', { type: 'button', class: 'danger-btn', onClick: () => {
-        if (!DD.ask('删除这条记录？')) return;
-        DD.deleteRecord(record.id); DD.closeSheet(); DD.render(); DD.toast('删掉了');
-      } }, '删除这条记录'));
+        if (!DD.ask(t('删除这条记录？'))) return;
+        DD.deleteRecord(record.id); DD.closeSheet(); DD.render(); DD.toast(t('删掉了'));
+      } }, t('删除这条记录')));
       return nodes;
     };
 
@@ -430,10 +431,10 @@
       DD.save();
       DD.closeSheet();
       DD.render();
-      DD.toast(editing || res.id ? '改好了' : '记下了');
+      DD.toast(t(editing || res.id ? '改好了' : '记下了'));
     };
 
-    const title = card === 'work' && draft.tab === 'review' ? '复盘' : DD.cardName(card);
+    const title = card === 'work' && draft.tab === 'review' ? t('复盘') : DD.cardName(card);
     sheet = DD.openSheet({ title, onSave: save });
     ctx.rerender();
   };

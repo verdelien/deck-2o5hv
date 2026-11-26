@@ -22,6 +22,10 @@
     DD.applyTheme();
     DD.render();
   };
+  DD.toggleLang = () => {
+    DD.setLang(DD.lang() === 'en' ? 'zh' : 'en');
+    DD.render();
+  };
   if (dark && dark.addEventListener) dark.addEventListener('change', () => { if (DD.state.settings.theme === 'system') { DD.applyTheme(); DD.render(); } });
 
   /* ---------- Pages ---------- */
@@ -32,9 +36,18 @@
     const i = Math.round(pager.scrollLeft / Math.max(1, pager.clientWidth));
     if (i !== DD.page) {
       DD.page = i;
+      DD.setTucked(i === 1);
       document.querySelectorAll('.page').forEach((p, pi) => p.querySelectorAll('.dot').forEach((d, di) => d.classList.toggle('on', di === pi)));
     }
   }, { passive: true });
+  // Scrolling the insights page tucks a raised deck away again.
+  let insY = 0;
+  document.getElementById('page-insights').addEventListener('scroll', (e) => {
+    const y = e.target.scrollTop;
+    if (DD.page === 1 && !DD.deckTucked && Math.abs(y - insY) > 24) DD.setTucked(true);
+    if (DD.deckTucked || DD.page !== 1) insY = y;
+  }, { passive: true });
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && DD.sheetOpen()) { DD.closeSheet(); return; }
     if (DD.sheetOpen() || /INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName)) return;

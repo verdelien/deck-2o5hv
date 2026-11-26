@@ -1,6 +1,6 @@
 // Day Deck service worker: network first (so updates show up), cache as the offline fallback.
-const CACHE = 'daydeck-v1';
-const ASSETS = ['./', './index.html', './styles.css', './manifest.webmanifest', './js/core.js', './js/ui.js', './js/cards.js', './js/pages.js', './js/app.js'];
+const CACHE = 'daydeck-v2';
+const ASSETS = ['./', './index.html', './styles.css', './manifest.webmanifest', './js/i18n.js', './js/core.js', './js/ui.js', './js/cards.js', './js/pages.js', './js/app.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
